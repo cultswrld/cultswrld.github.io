@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Laze</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6ecf0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            transition: margin-left 0.3s;
+        }
+        header {
+            width: 100%;
+            background-color: #1DA1F2;
+            color: #fff;
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: transform 0.3s;
+            z-index: 1;
+        }
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+        .sidebar .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #1DA1F2;
+        }
+        .sidebar button {
+            border: none;
+            background-color: #fff;
+            color: #1DA1F2;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin-bottom: 10px;
+            text-align: left;
+            font-size: 16px;
+        }
+        .sidebar button:hover {
+            background-color: #e8f5fe;
+        }
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            width: calc(100% - 250px);
+            transition: margin-left 0.3s, width 0.3s;
+        }
+        .content.collapsed {
+            margin-left: 0;
+            width: 100%;
+        }
+        .toggle-btn {
+            position: fixed;
+            left: 10px;
+            bottom: 10px;
+            background-color: #1DA1F2;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            padding: 10px 15px;
+            border-radius: 50%;
+            z-index: 1000;
+        }
+        h2 {
+            margin-top: 20px;
+        }
+        .post {
+            max-width: 600px;
+            width: 100%;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .post-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .post-header .post-author {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .post-header .post-username {
+            font-size: 14px;
+            color: #666;
+            margin-left: 5px;
+        }
+        .post-content {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        .post-actions {
+            display: flex;
+            align-items: center;
+        }
+        .post-actions button {
+            margin-left: 10px;
+            border: none;
+            background-color: transparent;
+            color: #666;
+            cursor: pointer;
+        }
+        .post-actions button:hover {
+            color: #1DA1F2;
+        }
+        .like-btn {
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .like-btn:hover {
+            color: #f00;
+        }
+        .liked {
+            color: #f00;
+        }
+        .new-post {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
+        .new-post textarea {
+            width: 600px;
+            height: 100px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+        .new-post button {
+            border: none;
+            background-color: #1DA1F2;
+            color: #fff;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 25px;
+        }
+        .new-post button:hover {
+            background-color: #1a91da;
+        }
+    </style>
+</head>
+<body>
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar">
+        <div class="logo">Laze</div>
+        <button onclick="goToHome()">Home</button>
+        <button onclick="goToProfile()">Profile</button>
+        <button onclick="goToExplore()">Explore</button>
+        <button onclick="goToMessages()">Messages</button>
+	<button onclick="goToSnake()">Play Snake!</button>
+    </div>
+    <div class="content">
+        <h2>POSTS</h2>
+        <div class="new-post">
+            <textarea id="newPostContent" placeholder="What's on your mind?"></textarea>
+            <button onclick="addNewPost()">Post</button>
+        </div>
+        <div id="postFeed">
+            <!-- Posts will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        // Function to toggle the sidebar
+        function toggleSidebar() {
+            var sidebar = document.querySelector('.sidebar');
+            var content = document.querySelector('.content');
+            sidebar.classList.toggle('collapsed');
+            content.classList.toggle('collapsed');
+        }
+
+        // Function to retrieve profile data from localStorage
+        function getProfileData() {
+            return JSON.parse(localStorage.getItem('profileData')) || {
+                name: 'John Doe',
+                username: 'johndoe',
+                bio: 'Front-end Developer',
+                profilePhoto: 'default-profile.jpg'
+            };
+        }
+
+        // Function to retrieve posts from localStorage
+        function getPosts() {
+            return JSON.parse(localStorage.getItem('posts')) || [];
+        }
+
+        // Function to save posts to localStorage
+        function savePosts(posts) {
+            localStorage.setItem('posts', JSON.stringify(posts));
+        }
+
+        // Function to display posts on the page
+        function displayPosts() {
+            var posts = getPosts();
+            var postFeed = document.getElementById('postFeed');
+            postFeed.innerHTML = ''; // Clear existing posts
+            posts.forEach(function(post, index) {
+                var postElement = createPostElement(post, index);
+                postFeed.appendChild(postElement);
+            });
+        }
+
+        // Function to create a new post element
+        function createPostElement(post, index) {
+            var postDiv = document.createElement('div');
+            postDiv.classList.add('post');
+
+            var postHeader = document.createElement('div');
+            postHeader.classList.add('post-header');
+            var profileImg = document.createElement('img');
+            profileImg.src = post.profilePhoto;
+            profileImg.alt = 'Profile Picture';
+            var postAuthor = document.createElement('span');
+            postAuthor.classList.add('post-author');
+            postAuthor.textContent = post.name;
+            var postUsername = document.createElement('span');
+            postUsername.classList.add('post-username');
+            postUsername.textContent = '@' + post.username;
+            postHeader.appendChild(profileImg);
+            postHeader.appendChild(postAuthor);
+            postHeader.appendChild(postUsername);
+
+            var postContent = document.createElement('p');
+            postContent.classList.add('post-content');
+            postContent.textContent = post.content;
+
+            var postActions = document.createElement('div');
+            postActions.classList.add('post-actions');
+            var deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.addEventListener('click', function() {
+                deletePost(index);
+            });
+            var likeBtn = document.createElement('button');
+            likeBtn.classList.add('like-btn');
+            likeBtn.innerHTML = post.liked ? '<span>&#10084;</span> ' : '<span>&#9825;</span> ';
+            likeBtn.addEventListener('click', function() {
+                toggleLike(index);
+            });
+            var likesCount = document.createElement('span');
+            likesCount.textContent = post.likes;
+            likeBtn.appendChild(likesCount);
+            var shareBtn = document.createElement('button');
+            shareBtn.classList.add('share-btn');
+            shareBtn.textContent = 'Share';
+            postActions.appendChild(deleteBtn);
+            postActions.appendChild(likeBtn);
+            postActions.appendChild(shareBtn);
+
+            postDiv.appendChild(postHeader);
+            postDiv.appendChild(postContent);
+            postDiv.appendChild(postActions);
+
+            return postDiv;
+        }
+
+        // Function to add a new post
+        function addNewPost() {
+            var profileData = getProfileData();
+            var content = document.getElementById('newPostContent').value;
+            if (content.trim() === '') return;
+            var posts = getPosts();
+            var newPost = {
+                profilePhoto: profileData.profilePhoto,
+                name: profileData.name,
+                username: profileData.username,
+                content: content,
+                likes: 0,
+                liked: false
+            };
+            posts.unshift(newPost);
+            savePosts(posts);
+            displayPosts();
+            document.getElementById('newPostContent').value = '';
+        }
+
+        // Function to delete a post
+        function deletePost(index) {
+            var posts = getPosts();
+            posts.splice(index, 1);
+            savePosts(posts);
+            displayPosts();
+        }
+
+        // Function to toggle like on a post
+        function toggleLike(index) {
+            var posts = getPosts();
+            posts[index].liked = !posts[index].liked;
+            posts[index].likes += posts[index].liked ? 1 : -1;
+            savePosts(posts);
+            displayPosts();
+        }
+
+        // Function to navigate to profile page
+        function goToProfile() {
+            window.location.href = 'profile.html';
+        }
+
+        // Function to navigate to home page
+        function goToHome() {
+            window.location.href = 'index.html';
+	}
+
+        // Function to navigate to explore page
+        function goToExplore() {
+            window.location.href = 'explore.html';
+	}
+
+        // Function to navigate to messages page
+        function goToMessages() {
+            window.location.href = 'messages.html';
+	}
+
+        // Function to navigate to snake page
+        function goToSnake() {
+            window.location.href = 'snake.html';
+
+
+
+
+
+
+}
+
+        // Initialize page with posts
+        document.addEventListener('DOMContentLoaded', function() {
+            displayPosts();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore - Laze</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6ecf0;
+            margin: 0;
+            padding: 20px;
+        }
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            background-color: #1DA1F2;
+            width: 250px;
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 20px;
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        .sidebar a {
+            padding: 10px;
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            display: block;
+        }
+        .sidebar a:hover {
+            background-color: #0f8ee2;
+        }
+        .container {
+            margin-left: 250px; /* Adjusted for sidebar width */
+            padding: 20px;
+        }
+        .post {
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .post-header img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .post-author {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .post-username {
+            color: #666;
+        }
+        .post-content {
+            margin-bottom: 10px;
+        }
+        .post-actions {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+        .post-actions button {
+            margin-right: 10px;
+            border: none;
+            background-color: transparent;
+            color: #666;
+            cursor: pointer;
+        }
+        .post-actions button:hover {
+            color: #1DA1F2;
+        }
+        .post-likes {
+            color: #666;
+            margin-right: 10px;
+        }
+        .post-comments {
+            margin-top: 10px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+        .comment-form {
+            display: none;
+            margin-top: 10px;
+        }
+        .comment-form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .comment-form button {
+            border: none;
+            background-color: #1DA1F2;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .comment-form button:hover {
+            background-color: #1a91da;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <a href="#" onclick="toggleSidebar()">☰ Laze</a>
+        <a href="index.html">Home</a>
+        <a href="profile.html">Profile</a>
+        <a href="#">Explore</a>
+	<a href="messages.html">Messages</a>
+	<a href="snake.html">Play Snake!</a>
+
+
+        <!-- Add more links as needed -->
+    </div>
+
+    <div class="container">
+        <h1>Explore</h1>
+        <div id="explorePosts">
+            <!-- Posts will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var explorePosts = document.getElementById('explorePosts');
+
+            // Generate 50 random posts
+            for (var i = 0; i < 50; i++) {
+                var post = generateRandomPost();
+                var postElement = createPostElement(post);
+                explorePosts.appendChild(postElement);
+            }
+        });
+
+        // Function to generate a random post
+        function generateRandomPost() {
+            var names = ['Alice', 'Bob', 'Charlie', 'David', 'Emma', 'Frank', 'Grace', 'Henry', 'Ivy', 'Jack'];
+            var usernames = ['@alice123', '@bob456', '@charlie789', '@david101', '@emma202', '@frank303'];
+            var profilePhotos = [
+                'https://randomuser.me/api/portraits/women/1.jpg',
+                'https://randomuser.me/api/portraits/men/1.jpg',
+                'https://randomuser.me/api/portraits/women/2.jpg',
+                'https://randomuser.me/api/portraits/men/2.jpg',
+                'https://randomuser.me/api/portraits/women/3.jpg'
+            ];
+            var postContents = [
+                'Just discovered a new coding trick! #codinglife',
+                'This cat video made my day 😺',
+                'Excited to share my latest artwork 🎨',
+                'Amazing sunset view from my balcony 🌇',
+                'Reached a new milestone in my fitness journey 💪',
+                'The best coffee shop in town! ☕️'
+            ];
+            var comments = [
+                'Wow, this is awesome!',
+                'I love it!',
+                'Can\'t wait to see more!',
+                'Great job 👍',
+                'You\'re amazing!'
+            ];
+
+            var randomName = names[Math.floor(Math.random() * names.length)];
+            var randomUsername = usernames[Math.floor(Math.random() * usernames.length)];
+            var randomProfilePhoto = profilePhotos[Math.floor(Math.random() * profilePhotos.length)];
+            var randomContent = postContents[Math.floor(Math.random() * postContents.length)];
+            var randomLikes = Math.floor(Math.random() * (1000000 - 1000 + 1)) + 1000; // Random likes between 1000 and 1,000,000
+            var randomComments = Math.random() > 0.5 ? getRandomComments() : [];
+
+            return {
+                name: randomName,
+                username: randomUsername,
+                profilePhoto: randomProfilePhoto,
+                content: randomContent,
+                likes: randomLikes,
+                comments: randomComments
+            };
+        }
+
+        // Function to generate random comments for a post
+        function getRandomComments() {
+            var comments = [
+                'Wow, this is awesome!',
+                'I love it!',
+                'Can\'t wait to see more!',
+                'Great job 👍',
+                'You\'re amazing!'
+            ];
+            var numComments = Math.floor(Math.random() * 3) + 1; // Random number of comments (1-3)
+            var randomComments = [];
+            for (var i = 0; i < numComments; i++) {
+                var randomComment = comments[Math.floor(Math.random() * comments.length)];
+                randomComments.push(randomComment);
+            }
+            return randomComments;
+        }
+
+        // Function to create HTML element for a post
+        function createPostElement(post) {
+            var postDiv = document.createElement('div');
+            postDiv.classList.add('post');
+            postDiv.setAttribute('data-username', post.username); // Set data-username attribute for identification
+
+            var postHeader = document.createElement('div');
+            postHeader.classList.add('post-header');
+            var profileImg = document.createElement('img');
+            profileImg.src = post.profilePhoto;
+            profileImg.alt = 'Profile Picture';
+            postHeader.appendChild(profileImg);
+
+            var postAuthor = document.createElement('span');
+            postAuthor.textContent = post.name;
+            postAuthor.classList.add('post-author');
+            postHeader.appendChild(postAuthor);
+
+            var postUsername = document.createElement('span');
+            postUsername.textContent = post.username;
+            postUsername.classList.add('post-username');
+            postHeader.appendChild(postUsername);
+
+            postDiv.appendChild(postHeader);
+
+            var postContent = document.createElement('p');
+            postContent.textContent = post.content;
+            postContent.classList.add('post-content');
+            postDiv.appendChild(postContent);
+
+            var postLikes = document.createElement('div');
+            postLikes.textContent = formatLikes(post.likes);
+            postLikes.classList.add('post-likes');
+            postDiv.appendChild(postLikes);
+
+            var likeButton = document.createElement('button');
+            likeButton.textContent = 'Like';
+            likeButton.addEventListener('click', function() {
+                likePost(post, postDiv);
+            });
+            postDiv.appendChild(likeButton);
+
+            var commentButton = document.createElement('button');
+            commentButton.textContent = 'Comment';
+            commentButton.addEventListener('click', function() {
+                toggleCommentForm(postDiv);
+            });
+            postDiv.appendChild(commentButton);
+
+            if (post.comments.length > 0) {
+                var postComments = document.createElement('div');
+                postComments.classList.add('post-comments');
+                post.comments.forEach(function(comment) {
+                    var commentElement = document.createElement('p');
+                    commentElement.textContent = comment;
+                    commentElement.classList.add('comment');
+                    postComments.appendChild(commentElement);
+                });
+                postDiv.appendChild(postComments);
+            }
+
+            var commentForm = document.createElement('div');
+            commentForm.classList.add('comment-form');
+            var textarea = document.createElement('textarea');
+            textarea.placeholder = 'Add a comment...';
+            commentForm.appendChild(textarea);
+            var addButton = document.createElement('button');
+            addButton.textContent = 'Add Comment';
+            addButton.addEventListener('click', function() {
+                addComment(post, textarea.value, postDiv); // Pass postDiv to addComment function
+                textarea.value = '';
+            });
+            commentForm.appendChild(addButton);
+            postDiv.appendChild(commentForm);
+
+            return postDiv;
+        }
+
+        // Function to format likes count
+        function formatLikes(likes) {
+            if (likes >= 1000000) {
+                return (likes / 1000000).toFixed(1) + 'M Likes';
+            } else if (likes >= 1000) {
+                return (likes / 1000).toFixed(1) + 'K Likes';
+            } else {
+                return likes + ' Likes';
+            }
+        }
+
+        // Function to handle liking a post
+        function likePost(post, postDiv) {
+            post.likes += 1;
+            var postLikesElement = postDiv.querySelector('.post-likes');
+            postLikesElement.textContent = formatLikes(post.likes);
+        }
+
+        // Function to toggle comment form visibility
+        function toggleCommentForm(postDiv) {
+            var commentForm = postDiv.querySelector('.comment-form');
+            commentForm.style.display = commentForm.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Function to add a comment to a post
+        function addComment(post, comment, postDiv) {
+            if (comment.trim() === '') {
+                return;
+            }
+            var newComment = 'You: ' + comment;
+            post.comments.push(newComment);
+            var postCommentsElement = postDiv.querySelector('.post-comments');
+            var commentElement = document.createElement('p');
+            commentElement.textContent = newComment;
+            commentElement.classList.add('comment');
+            postCommentsElement.appendChild(commentElement);
+        }
+
+        // Function to toggle the sidebar
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+    </script>
+</body>
+</html>

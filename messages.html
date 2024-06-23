@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMs - Laze</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6ecf0;
+            margin: 0;
+            padding: 20px;
+        }
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            background-color: #1DA1F2;
+            width: 250px;
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 20px;
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        .sidebar a {
+            padding: 10px;
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            display: block;
+        }
+        .sidebar a:hover {
+            background-color: #0f8ee2;
+        }
+        .container {
+            margin-left: 250px; /* Adjusted for sidebar width */
+            max-width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .message-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .message {
+            border-bottom: 1px solid #ccc;
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .message:hover {
+            background-color: #f0f0f0;
+        }
+        .message img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .message .details {
+            flex: 1;
+        }
+        .message .details .name {
+            font-weight: bold;
+        }
+        .message .details .username {
+            color: #666;
+        }
+        .message-window {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            width: 400px;
+            max-width: 90%;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        .message-window-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .message-window-header .name {
+            font-weight: bold;
+        }
+        .message-window-header .username {
+            color: #666;
+        }
+        .message-window-content {
+            margin-bottom: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .message-window-content p {
+            margin: 0 0 10px;
+            padding: 8px;
+            border-radius: 8px;
+        }
+        .message-window-content .received {
+            background-color: #f0f0f0;
+            align-self: flex-start;
+        }
+        .message-window-content .sent {
+            background-color: #1DA1F2;
+            color: white;
+            align-self: flex-end;
+        }
+        .message-window-footer {
+            margin-top: 10px;
+        }
+        .message-window-footer textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            resize: vertical;
+            min-height: 60px;
+        }
+        .message-window-footer button {
+            margin-top: 8px;
+            border: none;
+            background-color: #1DA1F2;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .message-window-footer button:hover {
+            background-color: #1a91da;
+        }
+        .close-button {
+            cursor: pointer;
+            font-size: 20px;
+            color: #999;
+            transition: color 0.3s;
+        }
+        .close-button:hover {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <a href="#" onclick="toggleSidebar()">☰ Laze</a>
+        <a href="index.html">Home</a>
+        <a href="profile.html">Profile</a>
+        <a href="explore.html">Explore</a>
+        <a href="#">DMs</a>
+	<a href="snake.html">Play Snake!</a>
+
+        <!-- Add more links as needed -->
+    </div>
+
+    <div class="container">
+        <h1>Direct Messages</h1>
+        <ul class="message-list" id="messageList">
+            <!-- Messages will be dynamically added here -->
+        </ul>
+    </div>
+
+    <!-- Message window -->
+    <div class="message-window" id="messageWindow">
+        <div class="message-window-header">
+            <div>
+                <img src="" alt="Profile Picture" id="messageWindowProfilePhoto" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+                <span class="name" id="messageWindowName"></span>
+                <span class="username" id="messageWindowUsername"></span>
+            </div>
+            <span class="close-button" onclick="closeMessageWindow()">&times;</span>
+        </div>
+        <div class="message-window-content" id="messageWindowContent">
+            <!-- Message content will be displayed here -->
+        </div>
+        <div class="message-window-footer">
+            <textarea id="messageTextarea" placeholder="Type your message..."></textarea>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var messageList = document.getElementById('messageList');
+
+            // Generate 5 fake messages
+            for (var i = 1; i <= 5; i++) {
+                var message = generateFakeMessage(i);
+                var messageElement = createMessageElement(message);
+                messageList.appendChild(messageElement);
+            }
+        });
+
+        // Function to generate a fake message
+        function generateFakeMessage(index) {
+            var names = ['Alice', 'Bob', 'Charlie', 'David', 'Emma'];
+            var usernames = ['@alice123', '@bob456', '@charlie789', '@david101', '@emma202'];
+            var profilePhotos = [
+                'https://randomuser.me/api/portraits/women/1.jpg',
+                'https://randomuser.me/api/portraits/men/1.jpg',
+                'https://randomuser.me/api/portraits/women/2.jpg',
+                'https://randomuser.me/api/portraits/men/2.jpg',
+                'https://randomuser.me/api/portraits/women/3.jpg'
+            ];
+            var messages = [
+                'Hey, how are you?',
+                'Did you see the new update?',
+                'What time should we meet tomorrow?',
+                'Can you send me the report?',
+                'Great job on the presentation!'
+            ];
+
+            var randomName = names[Math.floor(Math.random() * names.length)];
+            var randomUsername = usernames[Math.floor(Math.random() * usernames.length)];
+            var randomProfilePhoto = profilePhotos[Math.floor(Math.random() * profilePhotos.length)];
+            var randomMessage = messages[Math.floor(Math.random() * messages.length)];
+
+            return {
+                name: randomName,
+                username: randomUsername,
+                profilePhoto: randomProfilePhoto,
+                message: randomMessage
+            };
+        }
+
+        // Function to create HTML element for a message
+        function createMessageElement(message) {
+            var messageElement = document.createElement('li');
+            messageElement.classList.add('message');
+            messageElement.addEventListener('click', function() {
+                openMessageWindow(message);
+            });
+
+            var profileImg = document.createElement('img');
+            profileImg.src = message.profilePhoto;
+            profileImg.alt = 'Profile Picture';
+            messageElement.appendChild(profileImg);
+
+            var detailsDiv = document.createElement('div');
+            detailsDiv.classList.add('details');
+
+            var nameSpan = document.createElement('span');
+            nameSpan.textContent = message.name;
+            nameSpan.classList.add('name');
+            detailsDiv.appendChild(nameSpan);
+
+            var usernameSpan = document.createElement('span');
+            usernameSpan.textContent = message.username;
+            usernameSpan.classList.add('username');
+            detailsDiv.appendChild(usernameSpan);
+
+            messageElement.appendChild(detailsDiv);
+
+            var messageContent = document.createElement('p');
+            messageContent.textContent = message.message;
+            messageElement.appendChild(messageContent);
+
+            return messageElement;
+        }
+
+        // Function to open message window
+        function openMessageWindow(message) {
+            var messageWindow = document.getElementById('messageWindow');
+            var messageWindowProfilePhoto = document.getElementById('messageWindowProfilePhoto');
+            var messageWindowName = document.getElementById('messageWindowName');
+            var messageWindowUsername = document.getElementById('messageWindowUsername');
+            var messageWindowContent = document.getElementById('messageWindowContent');
+
+            messageWindowProfilePhoto.src = message.profilePhoto;
+            messageWindowProfilePhoto.alt = 'Profile Picture';
+            messageWindowName.textContent = message.name;
+            messageWindowUsername.textContent = message.username;
+
+            // Display message history in the message window
+            messageWindowContent.innerHTML = '';
+            var receivedMessage = document.createElement('p');
+            receivedMessage.textContent = message.message;
+            receivedMessage.classList.add('received');
+            messageWindowContent.appendChild(receivedMessage);
+
+            messageWindow.style.display = 'block';
+        }
+
+        // Function to close message window
+        function closeMessageWindow() {
+            var messageWindow = document.getElementById('messageWindow');
+            messageWindow.style.display = 'none';
+        }
+
+        // Function to send message
+        function sendMessage() {
+            var messageTextarea = document.getElementById('messageTextarea');
+            var messageContent = messageTextarea.value.trim();
+            if (messageContent === '') {
+                return;
+            }
+            // In a real application, you would handle sending the message here
+            var sentMessage = document.createElement('p');
+            sentMessage.textContent = messageContent;
+            sentMessage.classList.add('sent');
+            var messageWindowContent = document.getElementById('messageWindowContent');
+            messageWindowContent.appendChild(sentMessage);
+
+            // Show confirmation popup (replace with actual sending logic)
+           
+
+            messageTextarea.value = ''; // Clear the textarea
+        }
+
+        // Function to toggle sidebar collapse
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+    </script>
+</body>
+</html>

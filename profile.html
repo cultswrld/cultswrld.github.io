@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Laze</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6ecf0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            background-color: #1DA1F2;
+            width: 250px;
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 20px;
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        .sidebar a {
+            padding: 10px;
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            display: block;
+        }
+        .sidebar a:hover {
+            background-color: #0f8ee2;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background-color: #fff;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-left: 20px;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .profile-header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-right: 20px;
+        }
+        .profile-info {
+            flex: 1;
+        }
+        .profile-info h2 {
+            font-size: 24px;
+            margin: 5px 0;
+        }
+        .profile-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .profile-info .edit-btn {
+            border: none;
+            background-color: #1DA1F2;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .profile-info .edit-btn:hover {
+            background-color: #1a91da;
+        }
+        .edit-profile-form {
+            display: none;
+            margin-top: 20px;
+        }
+        .edit-profile-form input,
+        .edit-profile-form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .edit-profile-form button {
+            border: none;
+            background-color: #1DA1F2;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .edit-profile-form button:hover {
+            background-color: #1a91da;
+        }
+        .post {
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .post-header img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .post-author {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .post-username {
+            color: #666;
+        }
+        .post-content {
+            margin-bottom: 10px;
+        }
+        .post-actions {
+            display: flex;
+            align-items: center;
+        }
+        .post-actions button {
+            margin-right: 10px;
+            border: none;
+            background-color: transparent;
+            color: #666;
+            cursor: pointer;
+        }
+        .post-actions button:hover {
+            color: #1DA1F2;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <a href="#" onclick="toggleSidebar()">☰ Laze</a>
+        <a href="index.html">Home</a>
+        <a href="explore.html">Explore</a>
+        <a href="#">Notifications</a>
+        <a href="messages.html">Messages</a>
+	 <a href="snake.html">Play Snake!</a>
+        
+    </div>
+
+    <div class="container">
+        <div class="profile-header">
+            <img id="profilePhoto" src="default-profile.jpg" alt="Profile Picture">
+            <div class="profile-info">
+                <h2 id="profileName">John Doe</h2>
+                <p id="profileUsername">@johndoe</p>
+                <p id="profileBio">Front-end Developer</p>
+                <button class="edit-btn" onclick="toggleEditForm()">Edit Profile</button>
+            </div>
+        </div>
+        <div class="edit-profile-form" id="editProfileForm">
+            <label for="editName">Name:</label>
+            <input type="text" id="editName" placeholder="Enter your name" required>
+            <label for="editUsername">Username:</label>
+            <input type="text" id="editUsername" placeholder="Enter your username" required>
+            <label for="editBio">Bio:</label>
+            <textarea id="editBio" placeholder="Enter your bio"></textarea>
+            <label for="editProfilePhoto">Profile Photo:</label>
+            <input type="file" id="editProfilePhoto">
+            <button onclick="saveProfile()">Save Profile</button>
+        </div>
+        <h2>POSTS</h2>
+        <div id="profilePosts">
+            <!-- User's posts will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+
+        // Function to retrieve profile data from localStorage
+        function getProfileData() {
+            return JSON.parse(localStorage.getItem('profileData')) || {
+                name: 'John Doe',
+                username: 'johndoe',
+                bio: 'Front-end Developer',
+                profilePhoto: 'default-profile.jpg'
+            };
+        }
+
+        // Function to retrieve posts from localStorage
+        function getPosts() {
+            return JSON.parse(localStorage.getItem('posts')) || [];
+        }
+
+        // Function to display profile information
+        function displayProfile() {
+            var profileData = getProfileData();
+            document.getElementById('profileName').textContent = profileData.name;
+            document.getElementById('profileUsername').textContent = '@' + profileData.username;
+            document.getElementById('profileBio').textContent = profileData.bio;
+            document.getElementById('profilePhoto').src = profileData.profilePhoto;
+        }
+
+        // Function to display posts on the profile page
+        function displayProfilePosts() {
+            var profileData = getProfileData();
+            var posts = getPosts().filter(post => post.username === profileData.username);
+            var profilePosts = document.getElementById('profilePosts');
+            profilePosts.innerHTML = ''; // Clear existing posts
+            posts.forEach(function(post, index) {
+                var postElement = createPostElement(post, index);
+                profilePosts.appendChild(postElement);
+            });
+        }
+
+        // Function to toggle the edit profile form visibility
+        function toggleEditForm() {
+            var editForm = document.getElementById('editProfileForm');
+            editForm.style.display = editForm.style.display === 'none' ? 'block' : 'none';
+            if (editForm.style.display === 'block') {
+                var profileData = getProfileData();
+                document.getElementById('editName').value = profileData.name;
+                document.getElementById('editUsername').value = profileData.username;
+                document.getElementById('editBio').value = profileData.bio;
+            }
+        }
+
+        // Function to save edited profile information
+        function saveProfile() {
+            var newName = document.getElementById('editName').value;
+            var newUsername = document.getElementById('editUsername').value;
+            var newBio = document.getElementById('editBio').value;
+            var newProfilePhoto = document.getElementById('editProfilePhoto').files[0];
+
+            if (newName.trim() === '' || newUsername.trim() === '') {
+                alert('Name and Username are required.');
+                return;
+            }
+
+            var profileData = {
+                name: newName,
+                username: newUsername,
+                bio: newBio,
+                profilePhoto: newProfilePhoto ? './' + newProfilePhoto.name : 'default-profile.jpg'
+            };
+
+            localStorage.setItem('profileData', JSON.stringify(profileData));
+            displayProfile();
+            displayProfilePosts();
+            toggleEditForm();
+        }
+
+        // Function to create a new post element
+        function createPostElement(post, index) {
+            var postDiv = document.createElement('div');
+            postDiv.classList.add('post');
+
+            var postHeader = document.createElement('div');
+            postHeader.classList.add('post-header');
+            var profileImg = document.createElement('img');
+            profileImg.src = post.profilePhoto;
+            profileImg.alt = 'Profile Picture';
+            profileImg.classList.add('post-profile-photo');
+            postHeader.appendChild(profileImg);
+
+            var postAuthor = document.createElement('span');
+            postAuthor.textContent = post.name;
+            postAuthor.classList.add('post-author');
+            postHeader.appendChild(postAuthor);
+
+            var postUsername = document.createElement('span');
+            postUsername.textContent = '@' + post.username;
+            postUsername.classList.add('post-username');
+            postHeader.appendChild(postUsername);
+
+            postDiv.appendChild(postHeader);
+
+            var postContent = document.createElement('p');
+            postContent.textContent = post.content;
+            postContent.classList.add('post-content');
+            postDiv.appendChild(postContent);
+
+            var postActions = document.createElement('div');
+            postActions.classList.add('post-actions');
+
+            var likeButton = document.createElement('button');
+            likeButton.textContent = 'Like';
+            likeButton.addEventListener('click', function() {
+                likePost(index);
+            });
+            postActions.appendChild(likeButton);
+
+            var shareButton = document.createElement('button');
+            shareButton.textContent = 'Share';
+            shareButton.addEventListener('click', function() {
+                sharePost(index);
+            });
+            postActions.appendChild(shareButton);
+
+            var deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', function() {
+                deletePost(index);
+            });
+            postActions.appendChild(deleteButton);
+
+            postDiv.appendChild(postActions);
+
+            return postDiv;
+        }
+
+        // Function to handle liking a post
+        function likePost(index) {
+            var posts = getPosts();
+            posts[index].likes += 1;
+            localStorage.setItem('posts', JSON.stringify(posts));
+            displayProfilePosts(); // Update posts display
+        }
+
+        // Function to handle sharing a post
+        function sharePost(index) {
+            // Placeholder function for sharing
+            alert('Share functionality coming soon!');
+        }
+
+        // Function to handle deleting a post
+        function deletePost(index) {
+            var posts = getPosts();
+            posts.splice(index, 1);
+            localStorage.setItem('posts', JSON.stringify(posts));
+            displayProfilePosts(); // Update posts display
+        }
+
+        // Initial setup on page load
+        displayProfile();
+        displayProfilePosts();
+    </script>
+</body>
+</html>
